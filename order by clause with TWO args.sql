@@ -1,0 +1,2 @@
+-- it first sort by firstname if both name are same then it go for 2nd date_of_bith to arrange in asc
+select first_name, sex , date_of_birth from people_information order by first_name, date_of_birth ;
