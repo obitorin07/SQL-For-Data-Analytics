@@ -1,0 +1,16 @@
+/* Problem 2: Rank students by their grades within each class. */
+WITH TOPPERS AS (
+    SELECT
+        NAME,
+        GENDER,
+        MATH_SCORE,
+        HISTORY_SCORE,
+        PHYSICS_SCORE,
+        GRADE,
+        ROW_NUMBER() OVER(PARTITION BY GRADE ORDER BY MATH_SCORE DESC, HISTORY_SCORE DESC, PHYSICS_SCORE DESC) AS TOP_RANKERS
+    FROM STUDENTS
+)
+
+SELECT * 
+FROM TOPPERS 
+WHERE GRADE = 'A' AND TOP_RANKERS <= 10;
