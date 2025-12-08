@@ -141,4 +141,68 @@ SELECT
 FROM RESULT AS R JOIN MENU AS M ON R.PRODUCT_ID = M.PRODUCT_ID
 WHERE RN = 1;	
 
- 
+
+
+-- Which item was purchased just before the customer became
+-- a member?
+WITH CTE AS (
+	SELECT
+		M.CUSTOMER_ID AS CUSTOMER,
+		S.PRODUCT_ID,
+		S.ORDER_DATE,
+		M.JOIN_DATE
+	FROM MEMBERS AS M JOIN SALES AS S ON S.CUSTOMER_ID = M.CUSTOMER_ID
+	AND S.ORDER_DATE < M.JOIN_DATE
+)
+,RESULT AS (
+	SELECT 
+		CUSTOMER,
+		PRODUCT_ID,
+		ORDER_DATE,
+		JOIN_DATE,
+		DENSE_RANK() OVER(PARTITION BY CUSTOMER ORDER BY ORDER_DATE DESC)AS RN
+	FROM CTE
+)
+SELECT 
+	R.CUSTOMER AS CUSTOMER,
+	M.PRODUCT_NAME AS PRODUCT
+	-- R.ORDER_DATE,
+	-- JOIN_DATE
+FROM RESULT AS R JOIN MENU AS M ON M.PRODUCT_ID = R.PRODUCT_ID
+WHERE RN = 1
+ORDER BY CUSTOMER;
+
+
+
+-- What is the total items and amount spent for each member
+-- before they became a member?
+
+WITH CTE AS (
+	SELECT
+		M.CUSTOMER_ID AS CUSTOMER,
+		S.PRODUCT_ID AS PRODUCT_ID
+		-- M.JOIN_DATE,
+		-- S.ORDER_DATE	
+	FROM MEMBERS AS M JOIN SALES AS S ON M.CUSTOMER_ID = S.CUSTOMER_ID AND M.JOIN_DATE > S.ORDER_DATE
+)
+SELECT 
+	CUSTOMER,
+	COUNT(C.PRODUCT_ID) AS TOTAL_ITEMS,
+	SUM(M.PRICE) AS TOTAL_SPENT
+FROM CTE AS C JOIN MENU AS M ON C.PRODUCT_ID = M.PRODUCT_ID
+GROUP BY CUSTOMER
+ORDER BY CUSTOMER ASC;
+
+-- WITHOUT CTE
+SELECT 
+    s.customer_id, 
+    COUNT(s.product_id) AS total_items, 
+    SUM(m.price) AS total_spent
+FROM sales AS s
+JOIN members AS mem 
+    ON s.customer_id = mem.customer_id
+    AND s.order_date < mem.join_date 
+JOIN menu AS m 
+    ON s.product_id = m.product_id
+GROUP BY s.customer_id
+ORDER BY s.customer_id;
