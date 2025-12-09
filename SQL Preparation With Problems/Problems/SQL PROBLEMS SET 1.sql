@@ -206,3 +206,17 @@ JOIN menu AS m
     ON s.product_id = m.product_id
 GROUP BY s.customer_id
 ORDER BY s.customer_id;
+
+
+
+-- If each $1 spent equates to 10 points and sushi has a 2x
+-- points multiplier - how many points would each customer
+-- have?
+
+SELECT 
+	S.CUSTOMER_ID,
+	SUM(CASE WHEN PRODUCT_NAME = 'Sushi' THEN PRICE * 20 ELSE PRICE * 10 END) AS MULTUPLIER_AMOUNT
+FROM SALES AS S JOIN MENU as M ON S.PRODUCT_ID = M.PRODUCT_ID
+GROUP BY S.CUSTOMER_ID
+ORDER BY MULTUPLIER_AMOUNT DESC;
+
